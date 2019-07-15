@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -31,8 +32,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _items = List<AppInfo>();
   var _message = "";
-  static const _platform =
-      const MethodChannel("com.mdcc.app_list_manager/apps");
+  static const _platform = const MethodChannel("com.mdcc.app_list_manager/apps");
 
   @override
   void initState() {
@@ -57,7 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (BuildContext ctx, int index) {
           final item = _items[index];
           return ListTile(
-            title: Text("${item.name}"),
+            leading: _getImage(item),
+            title: Text(item.displayName ?? item.name),
           );
         },
         separatorBuilder: (BuildContext ctx, int index) => Divider(),
@@ -67,25 +68,31 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _initApps() async {
     try {
       final result = await _platform.invokeMethod('getApps');
-      setState(() async {
-        _items.clear();
+      final infos = List<AppInfo>();
 
-        for (var itemX in result) {
-          var item = Map<String, dynamic>.from(itemX);
-          var info = AppInfo(item["className"], item["dataDir"], item["name"],
-              item["packageName"]);
-          _items.add(info);
+      for (var itemX in result) {
+        var item = Map<String, dynamic>.from(itemX);
+        if (item["packageName"] != null) {
+          var info = AppInfo(item["className"], item["dataDir"], item["name"], item["packageName"]);
+          info.displayName = item["displayName"];
 
-          var img = await _platform
-              .invokeMethod('getIcon', {"name": info.packageName});
+          try {
+            var prefix = "data:image/png;base64,";
+            var bStr = item["image"].substring(prefix.length).replaceAll("\n", "");
+            var bs = Base64Codec().decode(bStr);
+            info.image = bs;
+          } on Exception catch (e) {
+            info.imageError = e.toString();
+          }
 
-          var prefix = "data:image/png;base64,";
-          var bStr = img.substring(prefix.length);
-          var bs = Base64Codec().decode(bStr.codeUnits);
-
-          info.image = bs;
+          infos.add(info);
         }
+      }
 
+      setState(() {
+        _items.clear();
+        _items.addAll(infos);
+        _items.sort((a, b) => (a.displayName ?? a.name).compareTo(b.displayName ?? b.name));
         _message = "";
       });
     } on PlatformException catch (e) {
@@ -95,12 +102,27 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
   }
+
+  _getImage(AppInfo item) {
+    if (item.imageError.isNotEmpty) return Text("E");
+
+    if (item.image != null)
+      return Image.memory(
+        item.image,
+        fit: BoxFit.scaleDown,
+      );
+
+    return Text("");
+  }
 }
 
 class AppInfo {
   AppInfo(this.className, this.dataDir, this.name, this.packageName);
 
   Uint8List image;
+
+  String displayName;
+  String imageError = "";
   String className;
   String dataDir;
   String name;

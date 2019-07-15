@@ -26,25 +26,29 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterView, appsChannel).setMethodCallHandler { call, result ->
             when {
                 call.method == "getApps" -> {
-                    val apps = getApplications()
-                    result.success(apps)
-                }
-                call.method == "getIcon" -> {
-                    val icon = getIcon(call.argument<String>("name")!!)
-                    val bitmap = drawableToBitmap(icon)
-                    val byteArrayOutputStream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-                    val byteArray = byteArrayOutputStream.toByteArray()
-                    val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
-
-                    result.success("data:image/png;base64,$encoded")
+                    result.success(getApplications())
                 }
                 else -> result.notImplemented()
             }
         }
     }
 
-    private fun getIcon(name: String): Drawable {
+    private fun getName(name: String): String {
+        return packageManager.getApplicationLabel(packageManager.getApplicationInfo(name, PackageManager.GET_META_DATA)).toString()
+    }
+
+    @SuppressLint("InlinedApi")
+    private fun getIcon(name: String): String {
+        val icon = getIconDrawable(name)
+        val bitmap = drawableToBitmap(icon)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        return "data:image/png;base64,$encoded"
+    }
+
+    private fun getIconDrawable(name: String): Drawable {
         return packageManager.getApplicationIcon(name)
     }
 
@@ -57,12 +61,14 @@ class MainActivity : FlutterActivity() {
                             "className" to it.className,
                             "dataDir" to it.dataDir,
                             "name" to it.name,
-                            "packageName" to it.packageName
+                            "packageName" to it.packageName,
+                            "image" to getIcon(it.packageName),
+                            "displayName" to getName(it.packageName)
                     )
                 }
     }
 
-    fun drawableToBitmap(drawable: Drawable): Bitmap {
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
         if (drawable is BitmapDrawable && drawable.bitmap != null)
             return drawable.bitmap
 
