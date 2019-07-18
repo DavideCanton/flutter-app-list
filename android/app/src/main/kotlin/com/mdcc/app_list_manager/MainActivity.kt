@@ -28,6 +28,9 @@ class MainActivity : FlutterActivity() {
                 call.method == "getApps" -> {
                     result.success(getApplications())
                 }
+                call.method == "getIcon" -> {
+                    result.success(getIcon(call.argument("name")!!))
+                }
                 else -> result.notImplemented()
             }
         }
@@ -62,7 +65,6 @@ class MainActivity : FlutterActivity() {
                             "dataDir" to it.dataDir,
                             "name" to it.name,
                             "packageName" to it.packageName,
-                            "image" to getIcon(it.packageName),
                             "displayName" to getName(it.packageName)
                     )
                 }
