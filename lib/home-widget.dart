@@ -37,28 +37,30 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildBody() => _message.isNotEmpty
       ? Center(child: Text(_message))
       : ListView.separated(
-          itemBuilder: (BuildContext ctx, int index) {
-            final item = _items[index];
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                  leading: _getImageWidget(item),
-                  title: Row(
-                    children: <Widget>[
-                      Expanded(
-                          child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Text(item.displayName ?? item.name),
-                      )),
-                      _getSizeWidget(item)
-                    ],
-                  )),
-            );
-          },
+          itemBuilder: _appListItemBuilder,
           separatorBuilder: (BuildContext ctx, int index) => const Divider(
                 height: 1.0,
               ),
           itemCount: _items.length);
+
+  Widget _appListItemBuilder(BuildContext ctx, int index) {
+    final item = _items[index];
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListTile(
+          leading: _getImageWidget(item),
+          title: Row(
+            children: <Widget>[
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(item.displayName ?? item.name),
+              )),
+              _getSizeWidget(item)
+            ],
+          )),
+    );
+  }
 
   Future<void> _initApps() async {
     try {
@@ -72,7 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
       });
 
       for (final info in infos) {
-        await Future.wait<dynamic>(<Future<dynamic>>[_getIcon(info), _getSize(info)]);
+        await Future.wait<dynamic>(
+            <Future<dynamic>>[_getIcon(info), _getSize(info)]);
       }
 
       setState(() {
@@ -126,11 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _getImageWidget(AppInfo item) {
-    if (item.imageLoading)
-      return Image.asset('assets/loading.gif');
+    if (item.imageLoading) return Image.asset('assets/loading.gif');
 
-    if (item.imageError.isNotEmpty)
-      return const Text('E');
+    if (item.imageError.isNotEmpty) return const Text('E');
 
     if (item.image != null)
       return Image.memory(
@@ -142,11 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _getSizeWidget(AppInfo item) {
-    if (item.sizeLoading)
-      return Image.asset('assets/loading.gif');
+    if (item.sizeLoading) return Image.asset('assets/loading.gif');
 
-    if (item.sizeInfo == null)
-      return const SizedBox.shrink();
+    if (item.sizeInfo == null) return const SizedBox.shrink();
 
     return Table(
       columnWidths: const {
@@ -158,7 +157,8 @@ class _MyHomePageState extends State<MyHomePage> {
         makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
         makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
         makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
+        makeTableRow(
+            'Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
       ],
     );
   }
@@ -166,8 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _humanReadableByteCount(int bytes) {
     const int unit = 1024;
 
-    if (bytes < unit)
-      return bytes.toString() + ' B';
+    if (bytes < unit) return bytes.toString() + ' B';
 
     final exp = log(bytes) ~/ log(unit);
     final pre = 'KMGTPE'[exp - 1];
@@ -183,6 +182,5 @@ class _MyHomePageState extends State<MyHomePage> {
         TableCell(
           child: Text(b),
         ),
-      ]
-  );
+      ]);
 }
