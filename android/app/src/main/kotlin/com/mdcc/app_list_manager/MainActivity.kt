@@ -1,8 +1,6 @@
 package com.mdcc.app_list_manager
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -13,18 +11,15 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
+import android.util.Log
 import io.flutter.app.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 import java.io.ByteArrayOutputStream
-import android.os.RemoteException
-import android.content.pm.IPackageStatsObserver
-import android.content.pm.PackageStats
-import android.provider.Settings
-import java.lang.reflect.Method
 
-
+@SuppressLint("InlinedApi")
 class MainActivity : FlutterActivity() {
     private lateinit var grantPermissionResult: MethodChannel.Result
     private val appsChannel = "com.mdcc.app_list_manager/apps"
@@ -53,13 +48,26 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     private fun grantPermission(result: MethodChannel.Result) {
-        if (checkSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) != PackageManager.PERMISSION_GRANTED) {
+        Log.i("kjdsafjkl", Build.VERSION.SDK_INT.toString())
+        if (!hasPermission()) {
             this.grantPermissionResult = result
             startActivityForResult(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), 1)
         } else
             result.success(true)
+    }
+
+    @SuppressLint("InlinedApi")
+    private fun hasPermission(): Boolean {
+        return try {
+            val storageStatsManager = getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+            val ai = packageManager.getApplicationInfo(packageName, 0)
+            val app1 = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)[0]
+            storageStatsManager.queryStatsForUid(ai.storageUuid, app1.uid)
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -72,7 +80,6 @@ class MainActivity : FlutterActivity() {
         return packageManager.getApplicationLabel(info).toString()
     }
 
-    @SuppressLint("InlinedApi")
     private fun getIcon(name: String): String {
         val icon = getIconDrawable(name)
         val bitmap = drawableToBitmap(icon)
@@ -88,8 +95,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun getApplications(): List<Map<String, Any>> {
-        val pm = packageManager
-        return pm.getInstalledApplications(PackageManager.GET_META_DATA)
+        return packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                 .filterNotNull()
                 .map {
                     mapOf<String, Any>(
@@ -117,37 +123,15 @@ class MainActivity : FlutterActivity() {
         return bitmap
     }
 
-    @SuppressLint("PrivateApi")
     private fun getSpace(name: String, function: (Map<String, Long>) -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val applicationInfo = packageManager.getApplicationInfo(name, PackageManager.GET_META_DATA)
-            val storageStatsManager = getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
-            val ai = packageManager.getApplicationInfo(packageName, 0)
-            val storageStats = storageStatsManager.queryStatsForUid(ai.storageUuid, applicationInfo.uid)
-            function(mapOf(
-                    "cache" to storageStats.cacheBytes,
-                    "data" to storageStats.dataBytes,
-                    "apkSize" to storageStats.appBytes
-            ))
-        } else {
-            val getPackageSizeInfo: Method = packageManager.javaClass
-                    .getMethod("getPackageSizeInfo",
-                            String::class.java, Class.forName("android.content.pm.IPackageStatsObserver"))
-
-            getPackageSizeInfo.invoke(packageManager, packageName, object : IPackageStatsObserver.Stub() { //error
-
-                @Suppress("DEPRECATION")
-                @Throws(RemoteException::class)
-                override fun onGetStatsCompleted(pStats: PackageStats, succeeded: Boolean) {
-                    function(mapOf(
-                            "cache" to pStats.cacheSize,
-                            "data" to pStats.dataSize,
-                            "apkSize" to pStats.codeSize
-                    ))
-                }
-            })
-        }
-
-
+        val applicationInfo = packageManager.getApplicationInfo(name, PackageManager.GET_META_DATA)
+        val storageStatsManager = getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+        val ai = packageManager.getApplicationInfo(packageName, 0)
+        val storageStats = storageStatsManager.queryStatsForUid(ai.storageUuid, applicationInfo.uid)
+        function(mapOf(
+                "cache" to storageStats.cacheBytes,
+                "data" to storageStats.dataBytes,
+                "apkSize" to storageStats.appBytes
+        ))
     }
 }

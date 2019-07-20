@@ -1,14 +1,12 @@
 import 'dart:typed_data';
 
 class AppInfo {
-  AppInfo(this.className, this.dataDir, this.name, this.packageName);
-
   Uint8List image;
 
   bool imageLoading = false;
   bool sizeLoading = false;
   String displayName;
-  String imageError = "";
+  String imageError = '';
   String className;
   String dataDir;
   String name;
@@ -24,20 +22,23 @@ class AppInfo {
   }
 
   static Comparator<AppInfo> byNameDescending() {
-    var fn = AppInfo.byName();
+    final fn = AppInfo.byName();
     return (a, b) => -fn(a, b);
   }
 
   static Comparator<AppInfo> byTotalSizeDesc() {
-    var fn = AppInfo.byTotalSize();
+    final fn = AppInfo.byTotalSize();
     return (a, b) => -fn(a, b);
   }
 }
 
 class AppSizeInfo {
+  AppSizeInfo.fromData(this.cache, this.data, this.apkSize);
+
   int cache;
   int data;
   int apkSize;
+
 
   int get totalSize {
     return data + cache + apkSize;

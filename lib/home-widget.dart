@@ -7,7 +7,7 @@ import 'channel-wrapper.dart';
 import 'models/appinfo.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
 
@@ -16,49 +16,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _items = List<AppInfo>();
-  var _message = "";
+  final _items = <AppInfo>[];
+  var _message = '';
   final channel = ChannelWrapper();
 
   @override
   void initState() {
     super.initState();
-    this._initApps();
+    _initApps();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: buildBody(),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: buildBody(),
+      );
 
-  Widget buildBody() {
-    if (_message.isNotEmpty) return Center(child: Text(_message));
-
-    return ListView.separated(
-        itemBuilder: (BuildContext ctx, int index) {
-          final item = _items[index];
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListTile(
-                leading: _getImage(item),
-                title: Row(
-                  children: <Widget>[Expanded(child: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: Text(item.displayName ?? item.name),
-                  )), _getSizes(item)],
-                )),
-          );
-        },
-        separatorBuilder: (BuildContext ctx, int index) => Divider(
-              height: 1.0,
-            ),
-        itemCount: _items.length);
-  }
+  Widget buildBody() => _message.isNotEmpty
+      ? Center(child: Text(_message))
+      : ListView.separated(
+          itemBuilder: (BuildContext ctx, int index) {
+            final item = _items[index];
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                  leading: _getImageWidget(item),
+                  title: Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(item.displayName ?? item.name),
+                      )),
+                      _getSizeWidget(item)
+                    ],
+                  )),
+            );
+          },
+          separatorBuilder: (BuildContext ctx, int index) => const Divider(
+                height: 1.0,
+              ),
+          itemCount: _items.length);
 
   Future<void> _initApps() async {
     try {
@@ -68,11 +68,11 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _items.clear();
         _items.addAll(infos);
-        _message = "";
+        _message = '';
       });
 
-      for (var info in infos) {
-        await Future.wait(<Future>[this._getIcon(info), this._getSize(info)]);
+      for (final info in infos) {
+        await Future.wait<dynamic>(<Future<dynamic>>[_getIcon(info), _getSize(info)]);
       }
 
       setState(() {
@@ -86,32 +86,32 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _getSize(AppInfo info) async {
+  Future<void> _getSize(AppInfo info) async {
     try {
       setState(() {
         info.sizeLoading = true;
       });
 
-      var bs = await channel.getSize(info);
+      final bs = await channel.getSize(info);
 
       setState(() {
         info.sizeInfo = bs;
         info.sizeLoading = false;
       });
-    } on Exception catch (e) {
+    } on Exception {
       setState(() {
         info.sizeLoading = false;
       });
     }
   }
 
-  _getIcon(AppInfo info) async {
+  Future<void> _getIcon(AppInfo info) async {
     try {
       setState(() {
         info.imageLoading = true;
       });
 
-      var bs = await channel.getIcon(info);
+      final bs = await channel.getIcon(info);
 
       setState(() {
         info.image = bs;
@@ -125,12 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _getImage(AppInfo item) {
-    if (item.imageLoading) {
-      return Image.asset("assets/loading.gif");
-    }
+  Widget _getImageWidget(AppInfo item) {
+    if (item.imageLoading)
+      return Image.asset('assets/loading.gif');
 
-    if (item.imageError.isNotEmpty) return Text("E");
+    if (item.imageError.isNotEmpty)
+      return const Text('E');
 
     if (item.image != null)
       return Image.memory(
@@ -138,49 +138,51 @@ class _MyHomePageState extends State<MyHomePage> {
         fit: BoxFit.scaleDown,
       );
 
-    return Text("");
+    return const Text('');
   }
 
-  _getSizes(AppInfo item) {
-    if (item.sizeLoading) {
-      return Image.asset("assets/loading.gif");
-    }
+  Widget _getSizeWidget(AppInfo item) {
+    if (item.sizeLoading)
+      return Image.asset('assets/loading.gif');
 
-    if (item.sizeInfo == null) return SizedBox.shrink();
+    if (item.sizeInfo == null)
+      return const SizedBox.shrink();
 
     return Table(
-      columnWidths: {
+      columnWidths: const {
         0: FixedColumnWidth(50),
         1: FixedColumnWidth(5),
         2: FixedColumnWidth(70),
       },
       children: <TableRow>[
-        makeTableRow("Apk: ", humanReadableByteCount(item.sizeInfo.apkSize)),
-        makeTableRow("Cache: ", humanReadableByteCount(item.sizeInfo.cache)),
-        makeTableRow("Data: ", humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow("Total: ", humanReadableByteCount(item.sizeInfo.totalSize)),
+        makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
+        makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
+        makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
+        makeTableRow('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
       ],
     );
   }
 
-  String humanReadableByteCount(int bytes) {
-    var unit = 1024;
-    if (bytes < unit) return bytes.toString() + " B";
-    int exp = log(bytes) ~/ log(unit);
-    String pre = "KMGTPE"[exp - 1];
-    var size = bytes / pow(unit, exp);
-    return "${size.toStringAsFixed(1)} ${pre}B";
+  String _humanReadableByteCount(int bytes) {
+    const int unit = 1024;
+
+    if (bytes < unit)
+      return bytes.toString() + ' B';
+
+    final exp = log(bytes) ~/ log(unit);
+    final pre = 'KMGTPE'[exp - 1];
+    final size = bytes / pow(unit, exp);
+    return '${size.toStringAsFixed(1)} ${pre}B';
   }
 
-  TableRow makeTableRow(String s, String b) {
-    return TableRow(children: <TableCell>[
-      TableCell(
-        child: Text(s, textAlign: TextAlign.right),
-      ),
-      TableCell(child: SizedBox.shrink()),
-      TableCell(
-        child: Text(b),
-      ),
-    ]);
-  }
+  TableRow makeTableRow(String s, String b) => TableRow(children: <TableCell>[
+        TableCell(
+          child: Text(s, textAlign: TextAlign.right),
+        ),
+        const TableCell(child: SizedBox.shrink()),
+        TableCell(
+          child: Text(b),
+        ),
+      ]
+  );
 }
