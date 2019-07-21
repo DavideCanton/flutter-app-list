@@ -74,8 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
 
       for (final info in infos) {
-        await Future.wait<dynamic>(
-            <Future<dynamic>>[_getIcon(info), _getSize(info)]);
+        await Future.wait<dynamic>(<Future<dynamic>>[_getIcon(info), _getSize(info)]);
       }
 
       setState(() {
@@ -157,8 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
         makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
         makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
         makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow(
-            'Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
+        makeTableRow('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
       ],
     );
   }
