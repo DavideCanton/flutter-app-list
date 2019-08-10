@@ -9,11 +9,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Base64
-import android.util.Log
 import io.flutter.app.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
@@ -24,7 +22,6 @@ class MainActivity : FlutterActivity() {
     private lateinit var grantPermissionResult: MethodChannel.Result
     private val appsChannel = "com.mdcc.app_list_manager/apps"
 
-    @SuppressLint("InlinedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GeneratedPluginRegistrant.registerWith(this)
@@ -56,7 +53,6 @@ class MainActivity : FlutterActivity() {
             result.success(true)
     }
 
-    @SuppressLint("InlinedApi")
     private fun hasPermission(): Boolean {
         return try {
             val storageStatsManager = getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
