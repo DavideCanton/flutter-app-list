@@ -11,25 +11,36 @@ class AppInfo {
   String dataDir;
   String name;
   String packageName;
+  String sizeLoadError = '';
   AppSizeInfo sizeInfo;
 
+  bool get needsLoad =>
+      !isLoading && !hasError && (sizeInfo == null || image == null);
+
+  bool get hasError => sizeLoadError != '' || imageError != '';
+
+  bool get isLoading => sizeLoading || imageLoading;
+
   static Comparator<AppInfo> byName() {
-    return (a, b) => (a.displayName ?? a.name).compareTo(b.displayName ?? b.name);
+    return (a, b) {
+      final aName = (a.displayName ?? a.name ?? '').toUpperCase();
+      final bName = (b.displayName ?? b.name ?? '').toUpperCase();
+      return aName.compareTo(bName);
+    };
   }
 
   static Comparator<AppInfo> byTotalSize() {
-    return (a, b) => (a.sizeInfo?.totalSize ?? 0).compareTo(b.sizeInfo?.totalSize ?? 0);
+    return (a, b) =>
+        (a.sizeInfo?.totalSize ?? 0).compareTo(b.sizeInfo?.totalSize ?? 0);
   }
 
-  static Comparator<AppInfo> byNameDescending() {
-    final fn = AppInfo.byName();
-    return (a, b) => -fn(a, b);
-  }
+  static Comparator<AppInfo> byNameDescending() => _reverse(AppInfo.byName());
 
-  static Comparator<AppInfo> byTotalSizeDesc() {
-    final fn = AppInfo.byTotalSize();
-    return (a, b) => -fn(a, b);
-  }
+  static Comparator<AppInfo> byTotalSizeDesc() =>
+      _reverse(AppInfo.byTotalSize());
+
+  static Comparator<AppInfo> _reverse(Comparator<AppInfo> c) =>
+      (a, b) => -c(a, b);
 }
 
 class AppSizeInfo {
@@ -38,7 +49,6 @@ class AppSizeInfo {
   int cache;
   int data;
   int apkSize;
-
 
   int get totalSize {
     return data + cache + apkSize;

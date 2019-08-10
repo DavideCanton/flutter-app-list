@@ -49,7 +49,6 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun grantPermission(result: MethodChannel.Result) {
-        Log.i("kjdsafjkl", Build.VERSION.SDK_INT.toString())
         if (!hasPermission()) {
             this.grantPermissionResult = result
             startActivityForResult(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), 1)

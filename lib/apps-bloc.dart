@@ -10,6 +10,8 @@ class AppsBloc {
 
   Stream<AppsBlocModel> get appsStream => _controller.stream;
 
+  bool get canSort => _lastValue.infos.every((item) => !item.needsLoad);
+
   void dispose() {
     _controller.close();
   }
@@ -20,6 +22,38 @@ class AppsBloc {
     model.infos.addAll(result);
     _lastValue = model;
     _controller.sink.add(model);
+
+    for(var item in model.infos) {
+      await loadAppsInfo(item);
+      _controller.sink.add(model);
+    }
+  }
+
+  Future<void> loadAppsInfo(AppInfo item) async {
+    print('Loading info for ${item.displayName}');
+
+    item.imageLoading = true;
+    item.sizeLoading = true;
+
+    try {
+      item.image = await _provider.getIcon(item);
+    }
+    catch(e) {
+      item.imageError = e.toString();
+    }
+    finally {
+      item.imageLoading = false;
+    }
+
+    try {
+      item.sizeInfo = await _provider.getSize(item);
+    }
+    catch(e) {
+      item.sizeLoadError = e.toString();
+    }
+    finally {
+      item.sizeLoading = false;
+    }
   }
 
   void sortValues(Comparator<AppInfo> comparator) {

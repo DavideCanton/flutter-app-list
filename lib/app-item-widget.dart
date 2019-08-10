@@ -2,65 +2,29 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'app-item-bloc.dart';
 import 'models/appinfo.dart';
 
-class AppItemWidget extends StatefulWidget {
-  const AppItemWidget(this.item);
+class AppItemWidget extends StatelessWidget {
+  const AppItemWidget({Key key, this.item}) : super(key: key);
 
   final AppInfo item;
 
   @override
-  State<StatefulWidget> createState() {
-    return _AppItemWidgetState();
-  }
-}
-
-class _AppItemWidgetState extends State<AppItemWidget> {
-  AppItemBloc bloc;
-
-  @override
-  void initState() {
-    super.initState();
-    bloc = AppItemBloc(widget.item);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    bloc.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    bloc.loadAppInfo();
-
-    return StreamBuilder<AppInfo>(
-      stream: bloc.appsStream,
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListTile(
-                leading: _getImageWidget(snapshot.data),
-                title: Row(
-                  children: <Widget>[
-                    Expanded(
-                        child: Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child:
-                          Text(snapshot.data.displayName ?? snapshot.data.name),
-                    )),
-                    _getSizeWidget(snapshot.data)
-                  ],
-                )),
-          );
-        }
-
-        if (snapshot.hasError) return ListTile(title: const Text('Errore!'));
-
-        return ListTile(title: const Text('Loading...'));
-      },
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListTile(
+          leading: _getImageWidget(item),
+          title: Row(
+            children: <Widget>[
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(item.displayName ?? item.name),
+              )),
+              _getSizeWidget(item)
+            ],
+          )),
     );
   }
 

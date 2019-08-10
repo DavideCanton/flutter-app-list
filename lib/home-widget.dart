@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'app-item-widget.dart';
 import 'apps-bloc.dart';
@@ -14,9 +15,21 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+class ChoiceItem {
+  ChoiceItem(this.text, this.fn);
+
+  String text;
+  Comparator<AppInfo> fn;
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   final channel = ChannelWrapper();
   final bloc = AppsBloc();
+
+  final _choices = <ChoiceItem>[
+    ChoiceItem('Ordina per dimensione decrescente', AppInfo.byTotalSizeDesc()),
+    ChoiceItem('Ordina per nome crescente', AppInfo.byName()),
+  ];
 
   @override
   void dispose() {
@@ -25,26 +38,37 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    bloc.loadApps();
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
           actions: <Widget>[
-            PopupMenuButton<int>(
-              onSelected: (int v) {
-                setState(() {
-                  bloc.sortValues(
-                      v == 0 ? AppInfo.byTotalSizeDesc() : AppInfo.byName());
-                });
+            PopupMenuButton<ChoiceItem>(
+              onSelected: (ChoiceItem v) {
+                if(!bloc.canSort)
+                  {
+                    Fluttertoast.showToast(
+                        msg: 'Can\'t sort, wait for info to be retrieved',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM
+                    );
+                    return;
+                  }
+
+                setState(() => bloc.sortValues(v.fn));
               },
               itemBuilder: (BuildContext context) {
-                return [0, 1].map((int choice) {
-                  return PopupMenuItem<int>(
-                    value: choice,
-                    child: Text(choice == 0
-                        ? 'Ordina per dimensione decrescente'
-                        : 'Ordina per nome crescente'),
-                  );
-                }).toList();
+                return _choices
+                    .map((ChoiceItem c) => PopupMenuItem<ChoiceItem>(
+                          value: c,
+                          child: Text(c.text),
+                        ))
+                    .toList(growable: false);
               },
             ),
           ],
@@ -53,15 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   Widget buildBody() {
-    bloc.loadApps();
     return StreamBuilder<AppsBlocModel>(
         stream: bloc.appsStream,
         builder: (BuildContext context, AsyncSnapshot<AppsBlocModel> snapshot) {
           if (snapshot.hasData) {
-            print('FIRST APPS ${snapshot.data.infos[0].displayName} ${snapshot.data.infos[1].displayName} ${snapshot.data.infos[2].displayName}');
             return ListView.separated(
                 itemBuilder: (BuildContext ctx, int index) =>
-                    AppItemWidget(snapshot.data.infos[index]),
+                    AppItemWidget(item: snapshot.data.infos[index]),
                 separatorBuilder: (BuildContext ctx, int index) =>
                     const Divider(
                       height: 1.0,
