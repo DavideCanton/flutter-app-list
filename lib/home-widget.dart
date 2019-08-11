@@ -25,6 +25,7 @@ class ChoiceItem {
 class _MyHomePageState extends State<MyHomePage> {
   final channel = ChannelWrapper();
   final bloc = AppsBloc();
+  final _scrollController = ScrollController();
 
   final _choices = <ChoiceItem>[
     ChoiceItem('Ordina per dimensione decrescente', AppInfo.byTotalSizeDesc()),
@@ -60,7 +61,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     return;
                   }
 
-                setState(() => bloc.sortValues(v.fn));
+                setState(() {
+                  bloc.sortValues(v.fn);
+                  _scrollController.jumpTo(0);
+                });
               },
               itemBuilder: (BuildContext context) {
                 return _choices
@@ -82,6 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context, AsyncSnapshot<AppsBlocModel> snapshot) {
           if (snapshot.hasData) {
             return ListView.separated(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics (),
                 itemBuilder: (BuildContext ctx, int index) =>
                     AppItemWidget(item: snapshot.data.infos[index]),
                 separatorBuilder: (BuildContext ctx, int index) =>

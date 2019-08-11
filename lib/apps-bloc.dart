@@ -25,10 +25,12 @@ class AppsBloc {
     _lastValue = model;
     _controller.sink.add(model);
 
-    final scheduler = Executor(concurrency: 3);
+    final scheduler = Executor(concurrency: 20);
+    int n = 0;
 
     scheduler.onChange.listen((dynamic _) {
-      if (scheduler.scheduledCount % 3 == 0) _controller.sink.add(model);
+      ++n;
+      if (n % 3 == 0) _controller.sink.add(model);
     });
 
     for (var item in model.infos) {
