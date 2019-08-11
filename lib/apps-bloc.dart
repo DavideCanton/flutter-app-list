@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:executor/executor.dart';
+
 import 'apps-provider.dart';
 import 'models/appinfo.dart';
 
@@ -23,10 +25,18 @@ class AppsBloc {
     _lastValue = model;
     _controller.sink.add(model);
 
-    for(var item in model.infos) {
-      await loadAppsInfo(item);
-      _controller.sink.add(model);
+    final scheduler = Executor(concurrency: 3);
+
+    scheduler.onChange.listen((dynamic _) {
+      if (scheduler.scheduledCount % 3 == 0) _controller.sink.add(model);
+    });
+
+    for (var item in model.infos) {
+      await scheduler.scheduleTask(() => loadAppsInfo(item));
     }
+
+    await scheduler.join(withWaiting: true);
+    _controller.sink.add(model);
   }
 
   Future<void> loadAppsInfo(AppInfo item) async {
@@ -37,21 +47,17 @@ class AppsBloc {
 
     try {
       item.image = await _provider.getIcon(item);
-    }
-    catch(e) {
+    } catch (e) {
       item.imageError = e.toString();
-    }
-    finally {
+    } finally {
       item.imageLoading = false;
     }
 
     try {
       item.sizeInfo = await _provider.getSize(item);
-    }
-    catch(e) {
+    } catch (e) {
       item.sizeLoadError = e.toString();
-    }
-    finally {
+    } finally {
       item.sizeLoading = false;
     }
   }
