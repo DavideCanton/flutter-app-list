@@ -11,21 +11,15 @@ class AppItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListTile(
-          leading: _getImageWidget(item),
-          title: Row(
-            children: <Widget>[
-              Expanded(
-                  child: Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Text(item.displayName ?? item.name),
-              )),
-              _getSizeWidget(item)
-            ],
-          )),
-    );
+    return ListTile(
+        leading: _getImageWidget(item),
+        title: Row(
+          children: <Widget>[
+            Expanded(
+                child: Text(item.displayName ?? item.name)),
+            _getSizeWidget(item)
+          ],
+        ));
   }
 
   Widget _getImageWidget(AppInfo item) {
@@ -46,15 +40,13 @@ class AppItemWidget extends StatelessWidget {
     return Table(
       columnWidths: const {
         0: FixedColumnWidth(50),
-        1: FixedColumnWidth(5),
-        2: FixedColumnWidth(70),
+        1: FixedColumnWidth(60),
       },
       children: <TableRow>[
         makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
         makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
         makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow(
-            'Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
+        makeTableRow('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
       ],
     );
   }
@@ -74,9 +66,8 @@ class AppItemWidget extends StatelessWidget {
         TableCell(
           child: Text(s, textAlign: TextAlign.right),
         ),
-        const TableCell(child: SizedBox.shrink()),
         TableCell(
-          child: Text(b),
+          child: Text(b, textAlign: TextAlign.right,),
         ),
       ]);
 }

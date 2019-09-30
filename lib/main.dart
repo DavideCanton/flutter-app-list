@@ -11,6 +11,9 @@ class MyApp extends StatelessWidget {
       title: 'Application Stats',
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
+        textTheme: Theme.of(context).textTheme.apply(
+          fontSizeFactor: 0.9
+        )
       ),
       home: const MyHomePage(title: 'Application Stats [Flutter powered!]'),
     );
