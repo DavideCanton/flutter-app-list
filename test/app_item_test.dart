@@ -6,7 +6,6 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:app_list_manager/app-item-widget.dart';
 import 'package:app_list_manager/models/appinfo.dart';
