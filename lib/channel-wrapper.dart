@@ -14,8 +14,7 @@ class ChannelWrapper {
   }
 
   Future<List<AppInfo>> getApps() async {
-    final result =
-        await _platform.invokeMethod<List<dynamic>>(_GET_APPS_METHOD);
+    final result = await _platform.invokeMethod<List<dynamic>>(_GET_APPS_METHOD);
     final infos = <AppInfo>[];
 
     for (var itemX in result) {
@@ -38,8 +37,7 @@ class ChannelWrapper {
   }
 
   Future<Uint8List> getIcon(AppInfo info) async {
-    final result = await _platform.invokeMethod<String>(
-        _GET_ICON_METHOD, _getArguments(info));
+    final result = await _platform.invokeMethod<String>(_GET_ICON_METHOD, _getArguments(info));
     const prefix = 'data:image/png;base64,';
     final bStr = result.substring(prefix.length).replaceAll('\n', '');
     return const Base64Codec().decode(bStr);
@@ -48,10 +46,8 @@ class ChannelWrapper {
   Future<AppSizeInfo> getSize(AppInfo info) async {
     print('Getting info for ${info.displayName}...');
 
-    final result = await _platform.invokeMethod<Map<dynamic, dynamic>>(
-        _GET_SIZE_METHOD, _getArguments(info));
-    return AppSizeInfo.fromData(
-        result['cache'], result['data'], result['apkSize']);
+    final result = await _platform.invokeMethod<Map<dynamic, dynamic>>(_GET_SIZE_METHOD, _getArguments(info));
+    return AppSizeInfo.fromData(result['cache'], result['data'], result['apkSize']);
   }
 
   Map<String, String> _getArguments(AppInfo info) => {'name': info.packageName};

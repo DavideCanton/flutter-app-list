@@ -14,8 +14,7 @@ class AppInfo {
   String sizeLoadError = '';
   AppSizeInfo sizeInfo;
 
-  bool get needsLoad =>
-      !isLoading && !hasError && (sizeInfo == null || image == null);
+  bool get needsLoad => !isLoading && !hasError && (sizeInfo == null || image == null);
 
   bool get hasError => sizeLoadError != '' || imageError != '';
 
@@ -30,17 +29,14 @@ class AppInfo {
   }
 
   static Comparator<AppInfo> byTotalSize() {
-    return (a, b) =>
-        (a.sizeInfo?.totalSize ?? 0).compareTo(b.sizeInfo?.totalSize ?? 0);
+    return (a, b) => (a.sizeInfo?.totalSize ?? 0).compareTo(b.sizeInfo?.totalSize ?? 0);
   }
 
   static Comparator<AppInfo> byNameDescending() => _reverse(AppInfo.byName());
 
-  static Comparator<AppInfo> byTotalSizeDesc() =>
-      _reverse(AppInfo.byTotalSize());
+  static Comparator<AppInfo> byTotalSizeDesc() => _reverse(AppInfo.byTotalSize());
 
-  static Comparator<AppInfo> _reverse(Comparator<AppInfo> c) =>
-      (a, b) => -c(a, b);
+  static Comparator<AppInfo> _reverse(Comparator<AppInfo> c) => (a, b) => -c(a, b);
 }
 
 class AppSizeInfo {

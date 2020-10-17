@@ -14,11 +14,7 @@ class AppItemWidget extends StatelessWidget {
     return ListTile(
         leading: _getImageWidget(item),
         title: Row(
-          children: <Widget>[
-            Expanded(
-                child: Text(item.displayName ?? item.name)),
-            _getSizeWidget(item)
-          ],
+          children: <Widget>[Expanded(child: Text(item.displayName ?? item.name)), _getSizeWidget(item)],
         ));
   }
 
@@ -67,7 +63,10 @@ class AppItemWidget extends StatelessWidget {
           child: Text(s, textAlign: TextAlign.right),
         ),
         TableCell(
-          child: Text(b, textAlign: TextAlign.right,),
+          child: Text(
+            b,
+            textAlign: TextAlign.right,
+          ),
         ),
       ]);
 }

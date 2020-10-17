@@ -51,15 +51,10 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: <Widget>[
             PopupMenuButton<ChoiceItem>(
               onSelected: (ChoiceItem v) {
-                if(!bloc.canSort)
-                  {
-                    Fluttertoast.showToast(
-                        msg: 'Can\'t sort, wait for info to be retrieved',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM
-                    );
-                    return;
-                  }
+                if (!bloc.canSort) {
+                  Fluttertoast.showToast(msg: 'Can\'t sort, wait for info to be retrieved', toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM);
+                  return;
+                }
 
                 setState(() {
                   bloc.sortValues(v.fn);
@@ -87,18 +82,15 @@ class _MyHomePageState extends State<MyHomePage> {
           if (snapshot.hasData) {
             return ListView.separated(
                 controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics (),
-                itemBuilder: (BuildContext ctx, int index) =>
-                    AppItemWidget(item: snapshot.data.infos[index]),
-                separatorBuilder: (BuildContext ctx, int index) =>
-                    const Divider(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemBuilder: (BuildContext ctx, int index) => AppItemWidget(item: snapshot.data.infos[index]),
+                separatorBuilder: (BuildContext ctx, int index) => const Divider(
                       height: 1.0,
                     ),
                 itemCount: snapshot.data.infos.length);
           }
 
-          if (snapshot.hasError)
-            return Center(child: Text(snapshot.error.toString()));
+          if (snapshot.hasError) return Center(child: Text(snapshot.error.toString()));
 
           return Center(child: Image.asset('assets/loading.gif'));
         });
