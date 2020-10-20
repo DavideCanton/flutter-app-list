@@ -14,7 +14,10 @@ class AppItemWidget extends StatelessWidget {
     return ListTile(
         leading: _getImageWidget(item),
         title: Row(
-          children: <Widget>[Expanded(child: Text(item.displayName ?? item.name)), _getSizeWidget(item)],
+          children: <Widget>[
+            Expanded(child: Text(item.displayName ?? item.name)),
+            _getSizeWidget(item)
+          ],
         ));
   }
 
@@ -42,7 +45,8 @@ class AppItemWidget extends StatelessWidget {
         makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
         makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
         makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
+        makeTableRow(
+            'Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
       ],
     );
   }

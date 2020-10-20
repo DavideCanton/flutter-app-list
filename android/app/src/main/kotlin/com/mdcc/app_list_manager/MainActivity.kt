@@ -9,10 +9,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.Bundle
 import android.provider.Settings
 import android.util.Base64
-import io.flutter.app.FlutterActivity
+import androidx.annotation.NonNull
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 import java.io.ByteArrayOutputStream
@@ -22,27 +23,26 @@ class MainActivity : FlutterActivity() {
     private lateinit var grantPermissionResult: MethodChannel.Result
     private val appsChannel = "com.mdcc.app_list_manager/apps"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        GeneratedPluginRegistrant.registerWith(this)
-
-        MethodChannel(flutterView, appsChannel).setMethodCallHandler { call, result ->
-            when {
-                call.method == "getApps" -> {
-                    result.success(getApplications())
+    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        GeneratedPluginRegistrant.registerWith(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, appsChannel)
+                .setMethodCallHandler { call, result ->
+                    when (call.method) {
+                        "getApps" -> {
+                            result.success(getApplications())
+                        }
+                        "getIcon" -> {
+                            result.success(getIcon(call.argument("name")!!))
+                        }
+                        "getSize" -> {
+                            getSpace(call.argument("name")!!) { result.success(it) }
+                        }
+                        "grantPermission" -> {
+                            grantPermission(result)
+                        }
+                        else -> result.notImplemented()
+                    }
                 }
-                call.method == "getIcon" -> {
-                    result.success(getIcon(call.argument("name")!!))
-                }
-                call.method == "getSize" -> {
-                    getSpace(call.argument("name")!!) { result.success(it) }
-                }
-                call.method == "grantPermission" -> {
-                    grantPermission(result)
-                }
-                else -> result.notImplemented()
-            }
-        }
     }
 
     private fun grantPermission(result: MethodChannel.Result) {
@@ -53,6 +53,7 @@ class MainActivity : FlutterActivity() {
             result.success(true)
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun hasPermission(): Boolean {
         return try {
             val storageStatsManager = getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
@@ -89,6 +90,7 @@ class MainActivity : FlutterActivity() {
         return packageManager.getApplicationIcon(name)
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun getApplications(): List<Map<String, Any>> {
         return packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                 .filterNotNull()
