@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:pie_chart/pie_chart.dart';
 
 import 'models/appinfo.dart';
 
@@ -9,16 +10,87 @@ class AppItemWidget extends StatelessWidget {
 
   final AppInfo item;
 
+  double get cardHeight => 120.0;
+
+  double get cardPadding => 8.0;
+
+  double get stroke => 8;
+
+  double get cardInnerHeight => cardHeight - 2 * cardPadding;
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-        leading: _getImageWidget(item),
-        title: Row(
-          children: <Widget>[
-            Expanded(child: Text(item.displayName ?? item.name)),
-            _getSizeWidget(item)
-          ],
-        ));
+    return Card(
+      child: InkWell(
+        splashColor: Colors.orange.withAlpha(30),
+        child: Container(
+          padding: EdgeInsets.all(cardPadding),
+          height: cardHeight,
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _getImageWidget(item),
+                    Container(
+                      width: 200,
+                      child: Padding(
+                        padding: EdgeInsets.all(cardPadding),
+                        child: Text(
+                          item.displayName,
+                          textScaleFactor: 1.0,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                Row(
+                  children: [
+                    _getSizeWidget(item),
+                  ],
+                )
+              ],
+            ),
+            Column(
+              children: [buildChart()],
+            )
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget buildChart() {
+    final size = cardInnerHeight - stroke * 2;
+    Widget child;
+
+    if (item.sizeInfo.apkSize + item.sizeInfo.cache + item.sizeInfo.data == 0)
+      child = Text('Empty!');
+    else
+      child = PieChart(
+        dataMap: {
+          'apk': item.sizeInfo.apkSize.toDouble(),
+          'cache': item.sizeInfo.cache.toDouble(),
+          'data': item.sizeInfo.data.toDouble()
+        },
+        legendOptions: const LegendOptions(showLegends: false),
+        chartValuesOptions: const ChartValuesOptions(showChartValues: false),
+        animationDuration: const Duration(milliseconds: 800),
+        chartRadius: size,
+        colorList: const [Colors.orange, Colors.blue, Colors.red],
+        initialAngleInDegree: -90,
+        chartType: ChartType.ring,
+        ringStrokeWidth: stroke,
+      );
+
+    return Container(
+      child: Center(child: child),
+      width: cardInnerHeight,
+      height: cardInnerHeight,
+    );
   }
 
   Widget _getImageWidget(AppInfo item) {
@@ -28,6 +100,7 @@ class AppItemWidget extends StatelessWidget {
       return Image.memory(
         item.image,
         fit: BoxFit.scaleDown,
+        height: cardInnerHeight / 2,
       );
 
     return const Text('');
@@ -36,18 +109,21 @@ class AppItemWidget extends StatelessWidget {
   Widget _getSizeWidget(AppInfo item) {
     if (item.sizeInfo == null) return const SizedBox.shrink();
 
-    return Table(
-      columnWidths: const {
-        0: FixedColumnWidth(50),
-        1: FixedColumnWidth(60),
-      },
-      children: <TableRow>[
-        makeTableRow('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize)),
-        makeTableRow('Cache: ', _humanReadableByteCount(item.sizeInfo.cache)),
-        makeTableRow('Data: ', _humanReadableByteCount(item.sizeInfo.data)),
-        makeTableRow(
-            'Total: ', _humanReadableByteCount(item.sizeInfo.totalSize)),
-      ],
+    return Padding(
+      padding: EdgeInsets.only(top: cardPadding),
+      child: Table(
+        defaultColumnWidth: const FixedColumnWidth(120),
+        children: <TableRow>[
+          TableRow(children: [
+            makeTableCell('Apk: ', _humanReadableByteCount(item.sizeInfo.apkSize), Colors.orange),
+            makeTableCell('Cache: ', _humanReadableByteCount(item.sizeInfo.cache), Colors.blue)
+          ]),
+          TableRow(children: [
+            makeTableCell('Data: ', _humanReadableByteCount(item.sizeInfo.data), Colors.red),
+            makeTableCell('Total: ', _humanReadableByteCount(item.sizeInfo.totalSize), Colors.transparent)
+          ])
+        ],
+      ),
     );
   }
 
@@ -62,15 +138,24 @@ class AppItemWidget extends StatelessWidget {
     return '${size.toStringAsFixed(1)} ${pre}B';
   }
 
-  TableRow makeTableRow(String s, String b) => TableRow(children: <TableCell>[
-        TableCell(
-          child: Text(s, textAlign: TextAlign.right),
+  TableCell makeTableCell(String s, String b, Color c) => TableCell(
+          child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Row(
+          children: [
+            Container(
+              color: c,
+              width: 10,
+              height: 10,
+            ),
+            Container(
+              width: 5,
+            ),
+            Text(
+              s + b,
+              textAlign: TextAlign.right,
+            ),
+          ],
         ),
-        TableCell(
-          child: Text(
-            b,
-            textAlign: TextAlign.right,
-          ),
-        ),
-      ]);
+      ));
 }

@@ -6,9 +6,15 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'Application Stats',
-        theme: ThemeData(primarySwatch: Colors.deepOrange, textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 0.9)),
-        home: const MyHomePage(title: 'Application Stats [Flutter powered!]'),
-      );
+  Widget build(BuildContext context) {
+    final swatch = Colors.deepOrange;
+
+    return MaterialApp(
+      title: 'Application Stats',
+      theme: ThemeData(brightness: Brightness.light, primarySwatch: swatch, primaryColorLight: swatch),
+      darkTheme: ThemeData(brightness: Brightness.dark, primarySwatch: swatch, primaryColorDark: swatch),
+      themeMode: ThemeMode.dark,
+      home: const MyHomePage(title: 'Application Stats [Flutter powered!]'),
+    );
+  }
 }

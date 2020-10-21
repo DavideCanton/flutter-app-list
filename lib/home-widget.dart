@@ -80,13 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
         stream: bloc.appsStream,
         builder: (BuildContext context, AsyncSnapshot<AppsBlocModel> snapshot) {
           if (snapshot.hasData) {
-            return ListView.separated(
+            return ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: (BuildContext ctx, int index) => AppItemWidget(item: snapshot.data.infos[index]),
-                separatorBuilder: (BuildContext ctx, int index) => const Divider(
-                      height: 1.0,
-                    ),
                 itemCount: snapshot.data.infos.length);
           }
 
